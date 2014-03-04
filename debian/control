@@ -1,0 +1,31 @@
+Source: webunit
+Maintainer: Richard Jones <richard@mechanicalcat.net>
+Section: python
+Priority: optional
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: python-webunit
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Unit test your websites with code that acts like a web brows
+ This release includes:
+ .
+ - send correct newline in mimeEncode (thanks Ivan Kurmanov)
+ - handle Max-Age set to 0 (thanks Matt Chisholm)
+ .
+ Webunit is a framework for unit testing websites:
+ .
+ - Browser-like page fetching including fetching the images and stylesheets
+   needed for a page and following redirects
+ - Cookies stored and trackable (all automatically handled)
+ - HTTP, HTTPS, GET, POST, basic auth all handled, control over expected
+   status codes, ...
+ - DOM parsing of pages to retrieve and analyse structure, including simple
+   form re-posting
+ - Two-line page-fetch followed by form-submit possible, with error checking
+ - Ability to register error page content across multiple tests
+ - Uses python's standard unittest module as the underlying framework
+ - May also be used to regression-test sites, or ensure their ongoing
+   operation once in production (testing login processes work, etc.)
+ .
