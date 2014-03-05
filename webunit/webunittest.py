@@ -22,7 +22,7 @@ import cookie
 
 VERBOSE = os.environ.get('VERBOSE', '')
 
-class HTTPError:
+class HTTPError(Exception):
     '''Wraps a HTTP response that is not 200.
 
     url - the URL that generated the error
@@ -34,14 +34,14 @@ class HTTPError:
     def __str__(self):
         return 'ERROR: %s'%str(self.response)
 
-class WebFetcher:
+class WebFetcher(object):
     '''Provide a "web client" class that handles fetching web pages.
 
        Handles basic authentication, HTTPS, detection of error content, ...
        Creates a HTTPResponse object on a valid response.
        Stores cookies received from the server.
     '''
-    def __init__(self):
+    def __init__(self, **kw):
         '''Initialise the server, port, authinfo, images and error_content
         attributes.
         '''
@@ -58,6 +58,7 @@ class WebFetcher:
         self.accept_cookies = 1
         self.debug_headers = 0
         self.cookies = {}
+        super(WebFetcher,self).__init__(**kw)
 
     result_count = 0
 
@@ -155,9 +156,9 @@ class WebFetcher:
         WebTestCase.result_count = WebTestCase.result_count + 1
         try:
             response = self.fetch(url, params, ok_codes=code, **kw)
-        except HTTPError, error:
+        except HTTPError as error:
             self.log('post'+`(url, params)`, error.response.body)
-            raise self.failureException, str(error.response)
+            raise self.failureException(str(error.response))
         return response
 
     def postAssertCode(self, url, params, code=None, **kw):
@@ -170,10 +171,10 @@ class WebFetcher:
             code = [code]
         try:
             response = self.fetch(url, params, ok_codes = code, **kw)
-        except HTTPError, error:
+        except HTTPError as error:
             self.log('postAssertCode'+`(url, params, code)`,
                 error.response.body)
-            raise self.failureException, str(error.response)
+            raise self.failureException(str(error.response))
         return response
 
     def postAssertContent(self, url, params, content, code=None, **kw):
@@ -186,14 +187,14 @@ class WebFetcher:
             code = [code]
         try:
             response = self.fetch(url, params, ok_codes = code, **kw)
-        except HTTPError, error:
+        except HTTPError as error:
             self.log('postAssertContent'+`(url, params, code)`,
                 error.response.body)
-            raise self.failureException, str(error)
+            raise self.failureException(str(error))
         if response.body.find(content) == -1:
             self.log('postAssertContent'+`(url, params, content)`,
                 response.body)
-            raise self.failureException, 'Expected content not in response'
+            raise self.failureException('Expected content not in response')
         return response
 
     def postAssertNotContent(self, url, params, content, code=None, **kw):
@@ -206,14 +207,14 @@ class WebFetcher:
             code = [code]
         try:
             response = self.fetch(url, params, ok_codes = code, **kw)
-        except HTTPError, error:
+        except HTTPError as error:
             self.log('postAssertNotContent'+`(url, params, code)`,
                 error.response.body)
-            raise self.failureException, str(error)
+            raise self.failureException(str(error))
         if response.body.find(content) != -1:
             self.log('postAssertNotContent'+`(url, params, content)`,
                 response.body)
-            raise self.failureException, 'Expected content was in response'
+            raise self.failureException('Expected content was in response')
         return response
 
     def postPage(self, url, params, code=None, **kw):
@@ -225,9 +226,9 @@ class WebFetcher:
         WebTestCase.result_count = WebTestCase.result_count + 1
         try:
             response = self.fetch(url, params, ok_codes=code, **kw)
-        except HTTPError, error:
+        except HTTPError as error:
             self.log('postPage %r'%((url, params),), error.response.body)
-            raise self.failureException, str(error)
+            raise self.failureException(str(error))
 
         # Check return code for redirect
         while response.code in (301, 302):
@@ -236,9 +237,9 @@ class WebFetcher:
                 newurl = response.headers['Location']
                 url = urlparse.urljoin(url, newurl)
                 response = self.fetch(url, ok_codes=code)
-            except HTTPError, error:
+            except HTTPError as error:
                 self.log('postPage %r'%url, error.response.body)
-                raise self.failureException, str(error)
+                raise self.failureException(str(error))
 
         # read and parse the content
         page = response.body
@@ -246,8 +247,8 @@ class WebFetcher:
             self.writeResult(url, page)
         try:
             self.pageImages(url, page)
-        except HTTPError, error:
-            raise self.failureException, str(error)
+        except HTTPError as error:
+            raise self.failureException(str(error))
         return response
 
     #
@@ -354,14 +355,14 @@ class WebFetcher:
                host_header = '%s:%s'%(server, port)
         elif protocol == 'https':
             #if httpslib is None:
-                #raise ValueError, "Can't fetch HTTPS: M2Crypto not installed"
+            #    raise ValueError("Can't fetch HTTPS: M2Crypto not installed")
             h = httplib.HTTPS(server, int(port))
             if int(port) == 443:
                host_header = server
             else: 
                host_header = '%s:%s'%(server, port)
         else:
-            raise ValueError, protocol
+            raise ValueError(protocol)
 
         headers = []
         params = None
@@ -456,7 +457,7 @@ class WebFetcher:
             try:
                 # decode the cookies and update the cookies store
                 cookie.decodeCookies(url, server, headers, self.cookies)
-            except:
+            except Exception:
                 if VERBOSE:
                     sys.stdout.write('c')
                     sys.stdout.flush()
@@ -475,7 +476,7 @@ class WebFetcher:
                     if VERBOSE:
                         sys.stdout.write('c')
                         sys.stdout.flush()
-                    raise self.failureException, msg
+                    raise self.failureException(msg)
 
         if VERBOSE:
             sys.stdout.write('_')
@@ -494,15 +495,14 @@ class WebTestCase(WebFetcher, unittest.TestCase):
     '''Extend the standard unittest TestCase with some HTTP fetching and
     response testing functions.
     '''
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='runTest', **kw):
         '''Initialise the server, port, authinfo, images and error_content
         attributes.
         '''
-        unittest.TestCase.__init__(self, methodName=methodName)
-        WebFetcher.__init__(self)
+        super(WebTestCase,self).__init__(methodName=methodName, **kw)
 
 
-class HTTPResponse(WebFetcher, unittest.TestCase):
+class HTTPResponse(WebFetcher):
     '''Wraps a HTTP response.
 
     protocol, server, port, url - the request server and URL
@@ -510,8 +510,9 @@ class HTTPResponse(WebFetcher, unittest.TestCase):
     body - the response body returned by httplib.HTTP.getfile()
     '''
     def __init__(self, cookies, protocol, server, port, url, code, message,
-            headers, body, error_content=[]):
-        WebFetcher.__init__(self)
+            headers, body, error_content=[], **kw):
+        super(HTTPResponse,self).__init__(**kw)
+
         # single cookie store per test
         self.cookies = cookies
 
@@ -540,7 +541,7 @@ class HTTPResponse(WebFetcher, unittest.TestCase):
             parser = SimpleDOMParser()
             try:
                 parser.parseString(self.body)
-            except:
+            except Exception:
                 log('HTTPResponse.getDOM'+`(self.url, self.code, self.message,
                     self.headers)`, self.body)
                 raise

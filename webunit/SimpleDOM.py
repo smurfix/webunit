@@ -93,18 +93,18 @@ class NestingError(HTMLParseError):
                        % (string.join(tagstack, '>, <'), endtag))
         else:
             msg = 'No tags are open to match </%s>' % endtag
-        HTMLParseError.__init__(self, msg, position)
+        super(NestingError,self).__init__(self, msg, position)
 
-class EmptyTagError(NestingError):
+class EmptyTagError(HTMLParseError):
     """Exception raised when empty elements have an end tag."""
 
     def __init__(self, tag, position=(None, None)):
         self.tag = tag
         msg = 'Close tag </%s> should be removed' % tag
-        HTMLParseError.__init__(self, msg, position)
+        super(EmptyTagError,self).__init__(self, msg, position)
 
 _marker=[]
-class SimpleDOMNode:
+class SimpleDOMNode(object):
     '''Simple class that represents a tag in a HTML document. The node may
        have contents which are represented as a sequence of tags or strings
        of text.
@@ -113,7 +113,8 @@ class SimpleDOMNode:
        node[N]    -- get the Nth entry in the contents list
        len(node)  -- number of sub-content objects
     '''
-    def __init__(self, name, attributes, contents):
+    def __init__(self, name, attributes, contents, **kw):
+        super(SimpleDOMNode,self).__init__(**kw)
         self.__dict__['__name'] = name
         self.__dict__['__attributes'] = attributes
         self.__dict__['__contents'] = contents
@@ -139,7 +140,7 @@ class SimpleDOMNode:
         for entry in l:
             if hasattr(entry, 'id') and entry.id == id:
                 return entry
-        raise ValueError, 'No %r with id %r'%(name, id)
+        raise ValueError('No %r with id %r'%(name, id))
 
     def getByNameFlat(self, name):
         '''Return all nodes of type "name" from the contents of this node.
@@ -188,7 +189,7 @@ class SimpleDOMNode:
         if self.__dict__['__attributes'].has_key(attr):
             return self.__dict__['__attributes'][attr]
         if default is _marker:
-            raise AttributeError, attr
+            raise AttributeError(attr)
         return default
 
     def __getattr__(self, attr):
@@ -196,7 +197,7 @@ class SimpleDOMNode:
             return self.__dict__['__attributes'][attr]
         if self.__dict__.has_key(attr):
             return self.__dict__[attr]
-        raise AttributeError, attr
+        raise AttributeError(attr)
     
     def __len__(self):
         return len(self.getContents())
@@ -311,8 +312,8 @@ class SimpleDOMNode:
         return elements
 
 class SimpleDOMParser(HTMLParser):
-    def __init__(self, debug=0):
-        HTMLParser.__init__(self)
+    def __init__(self, debug=0, **kw):
+        super(SimpleDOMParser,self).__init__(**kw)
         self.tagstack = []
         self.__debug = debug
 

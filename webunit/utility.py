@@ -10,12 +10,13 @@
 import cStringIO
 import os.path
 
-class Upload:
+class Upload(object):
     '''Simple "sentinel" class that lets us identify file uploads in POST
     data mappings.
     '''
-    def __init__(self, filename):
+    def __init__(self, filename, **kw):
         self.filename = filename
+        super(Upload,self).__init__(**kw)
     def __cmp__(self, other):
         return cmp(self.filename, other.filename)
 

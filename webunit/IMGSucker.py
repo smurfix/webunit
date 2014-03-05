@@ -9,7 +9,7 @@
 
 import htmllib, formatter, urlparse
 
-class IMGSucker(htmllib.HTMLParser):
+class IMGSucker(htmllib.HTMLParser,object): ## *sigh*
     '''Suck in all the images and linked stylesheets for an HTML page.
 
     The sucker uses a HTTP session object which provides:
@@ -26,8 +26,8 @@ class IMGSucker(htmllib.HTMLParser):
     rewritten for local files where appropriate.
     **CURRENTLY NOT IMPLEMENTED**
     '''
-    def __init__(self, url, session):
-        htmllib.HTMLParser.__init__(self, formatter.NullFormatter())
+    def __init__(self, url, session, **kw):
+        super(IMGSucker,self).__init__(self, formatter.NullFormatter(), **kw)
         self.base = url
         self.session = session
         self.output = ""

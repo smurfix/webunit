@@ -88,13 +88,14 @@ class HTMLParseError(Exception):
 # self.handle_charref() with the string containing the reference as
 # the argument.
 
-class HTMLParser:
+class HTMLParser(object):
 
     CDATA_CONTENT_ELEMENTS = ("script", "style")
 
 
     # Interface -- initialize and reset this instance
-    def __init__(self):
+    def __init__(self, **kw):
+        super(HTMLParser,self).__init__(**kw)
         self.reset()
 
     # Interface -- reset this instance.  Loses all unprocessed data
