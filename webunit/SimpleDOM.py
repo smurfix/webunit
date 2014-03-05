@@ -139,7 +139,7 @@ class SimpleDOMNode:
         for entry in l:
             if hasattr(entry, 'id') and entry.id == id:
                 return entry
-        raise ValueError, 'No %r with id %r'%(name, id)
+        raise ValueError('No %r with id %r'%(name, id))
 
     def getByNameFlat(self, name):
         '''Return all nodes of type "name" from the contents of this node.
@@ -188,7 +188,7 @@ class SimpleDOMNode:
         if self.__dict__['__attributes'].has_key(attr):
             return self.__dict__['__attributes'][attr]
         if default is _marker:
-            raise AttributeError, attr
+            raise AttributeError(attr)
         return default
 
     def __getattr__(self, attr):
@@ -196,7 +196,7 @@ class SimpleDOMNode:
             return self.__dict__['__attributes'][attr]
         if self.__dict__.has_key(attr):
             return self.__dict__[attr]
-        raise AttributeError, attr
+        raise AttributeError(attr)
     
     def __len__(self):
         return len(self.getContents())

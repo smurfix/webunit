@@ -1,6 +1,6 @@
 import re, urlparse, Cookie
 
-class Error:
+class Error(Exception):
     '''Handles a specific cookie error.
 
     message - a specific message as to why the cookie is erroneous
@@ -60,7 +60,7 @@ def decodeCookies(url, server, headers, cookies):
             # reject if The value for the Domain attribute contains no
             # embedded dots or does not start with a dot.
             if '.' not in domain:
-                raise Error, 'Cookie domain "%s" has no "."'%domain
+                raise Error('Cookie domain "%s" has no "."'%domain)
             if domain[0] != '.':
                 # per RFC2965 cookie domains with no leading '.' will have
                 # one added
@@ -73,16 +73,16 @@ def decodeCookies(url, server, headers, cookies):
             # but not:
             #  - someexample.com
             if not server.endswith(domain) and domain[1:] != server:
-                raise Error, 'Cookie domain "%s" doesn\'t match '\
-                    'request host "%s"'%(domain, server)
+                raise Error('Cookie domain "%s" doesn\'t match '\
+                    'request host "%s"'%(domain, server))
             # reject if the request-host is a FQDN (not IP address) and
             # has the form HD, where D is the value of the Domain
             # attribute, and H is a string that contains one or more dots.
             if re.search(r'[a-zA-Z]', server):
                 H = server[:-len(domain)]
                 if '.' in H:
-                    raise Error, 'Cookie domain "%s" too short '\
-                    'for request host "%s"'%(domain, server)
+                    raise Error('Cookie domain "%s" too short '\
+                    'for request host "%s"'%(domain, server))
         else:
             domain = server
 
@@ -92,8 +92,8 @@ def decodeCookies(url, server, headers, cookies):
         # (noting that empty request path and '/' are often synonymous, yay)
         if not (request_path.startswith(path) or (request_path == '' and
                 cookie['path'] == '/')):
-            raise Error, 'Cookie path "%s" doesn\'t match '\
-                'request url "%s"'%(path, request_path)
+            raise Error('Cookie path "%s" doesn\'t match '\
+                'request url "%s"'%(path, request_path))
 
         bydom = cookies.setdefault(domain, {})
         bypath = bydom.setdefault(path, {})
