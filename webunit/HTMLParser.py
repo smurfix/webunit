@@ -94,7 +94,8 @@ class HTMLParser(object):
 
 
     # Interface -- initialize and reset this instance
-    def __init__(self):
+    def __init__(self, **kw):
+        super(HTMLParser,self).__init__(**kw)
         self.reset()
 
     # Interface -- reset this instance.  Loses all unprocessed data

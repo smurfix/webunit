@@ -93,18 +93,18 @@ class NestingError(HTMLParseError):
                        % (string.join(tagstack, '>, <'), endtag))
         else:
             msg = 'No tags are open to match </%s>' % endtag
-        HTMLParseError.__init__(self, msg, position)
+        super(NestingError,self).__init__(self, msg, position)
 
-class EmptyTagError(NestingError):
+class EmptyTagError(HTMLParseError):
     """Exception raised when empty elements have an end tag."""
 
     def __init__(self, tag, position=(None, None)):
         self.tag = tag
         msg = 'Close tag </%s> should be removed' % tag
-        HTMLParseError.__init__(self, msg, position)
+        super(EmptyTagError,self).__init__(self, msg, position)
 
 _marker=[]
-class SimpleDOMNode:
+class SimpleDOMNode(object):
     '''Simple class that represents a tag in a HTML document. The node may
        have contents which are represented as a sequence of tags or strings
        of text.
@@ -113,7 +113,8 @@ class SimpleDOMNode:
        node[N]    -- get the Nth entry in the contents list
        len(node)  -- number of sub-content objects
     '''
-    def __init__(self, name, attributes, contents):
+    def __init__(self, name, attributes, contents, **kw):
+        super(SimpleDOMNode,self).__init__(**kw)
         self.__dict__['__name'] = name
         self.__dict__['__attributes'] = attributes
         self.__dict__['__contents'] = contents
@@ -311,8 +312,8 @@ class SimpleDOMNode:
         return elements
 
 class SimpleDOMParser(HTMLParser):
-    def __init__(self, debug=0):
-        HTMLParser.__init__(self)
+    def __init__(self, debug=0, **kw):
+        super(SimpleDOMParser,self).__init__(**kw)
         self.tagstack = []
         self.__debug = debug
 

@@ -41,7 +41,7 @@ class WebFetcher(object):
        Creates a HTTPResponse object on a valid response.
        Stores cookies received from the server.
     '''
-    def __init__(self):
+    def __init__(self, **kw):
         '''Initialise the server, port, authinfo, images and error_content
         attributes.
         '''
@@ -58,6 +58,7 @@ class WebFetcher(object):
         self.accept_cookies = 1
         self.debug_headers = 0
         self.cookies = {}
+        super(WebFetcher,self).__init__(**kw)
 
     result_count = 0
 
@@ -494,15 +495,14 @@ class WebTestCase(WebFetcher, unittest.TestCase):
     '''Extend the standard unittest TestCase with some HTTP fetching and
     response testing functions.
     '''
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='runTest', **kw):
         '''Initialise the server, port, authinfo, images and error_content
         attributes.
         '''
-        unittest.TestCase.__init__(self, methodName=methodName)
-        WebFetcher.__init__(self)
+        super(WebTestCase,self).__init__(methodName=methodName, **kw)
 
 
-class HTTPResponse(WebFetcher, unittest.TestCase):
+class HTTPResponse(WebFetcher):
     '''Wraps a HTTP response.
 
     protocol, server, port, url - the request server and URL
@@ -510,8 +510,9 @@ class HTTPResponse(WebFetcher, unittest.TestCase):
     body - the response body returned by httplib.HTTP.getfile()
     '''
     def __init__(self, cookies, protocol, server, port, url, code, message,
-            headers, body, error_content=[]):
-        WebFetcher.__init__(self)
+            headers, body, error_content=[], **kw):
+        super(HTTPResponse,self).__init__(**kw)
+
         # single cookie store per test
         self.cookies = cookies
 
