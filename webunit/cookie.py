@@ -49,8 +49,10 @@ def decodeCookies(url, server, headers, cookies):
     if len(request_path) > 1 and request_path[-1] == '/':
         request_path = request_path[:-1]
 
-    hdrcookies = Cookie.SimpleCookie("\n".join(map(lambda x: x.strip(), 
-        headers.getallmatchingheaders('set-cookie'))))
+    hdrcookies = Cookie.SimpleCookie()
+    for h in headers.getallmatchingheaders('set-cookie'):
+        hdrcookies.load(h[h.index(':')+1:].strip())
+
     for cookie in hdrcookies.values():
         # XXX: there doesn't seem to be a way to determine if the
         # cookie was set or defaulted to an empty string :(
